@@ -146,7 +146,6 @@ async def profile_view(message: types.Message):
     try:
         all_rewards = rewards_sheet.get_all_records()
         
-        # Функция точного подсчета баланса с учетом формата чисел (запятые/точки)
         def safe_sum(status):
             total = 0
             for r in all_rewards:
@@ -163,17 +162,21 @@ async def profile_view(message: types.Message):
         all_users = users_sheet.get_all_records()
         friends_count = sum(1 for u in all_users if str(u.get('referrer_id')) == str(user['id']))
 
-        # Ссылка напрямую на основной бот
-        link = f"https://t.me/{MAIN_BOT_USERNAME}?start=ref_{user_id}"
+        # --- ВОТ ТУТ ПРАВИЛЬНОЕ ФОРМАТИРОВАНИЕ ---
+        # Сама рабочая ссылка (скрытая)
+        full_ref_link = f"https://t.me/{MAIN_BOT_USERNAME}?start=ref_{user_id}"
+        # Красивый текст ссылки (как на скрине)
+        short_visible_link = f"t.me/{MAIN_BOT_USERNAME}"
         
         text = (f"<b>👤 Личный кабинет</b>\n\n"
                 f"🔗 <b>Ваша ссылка для приглашения:</b>\n"
-                f"<code>{link}</code>\n\n"
+                f'<a href="{full_ref_link}">{short_visible_link}</a>\n\n' # Делаем текст кликабельным
                 f"📊 <b>Статистика:</b>\n"
                 f"👥 Приглашено друзей: {friends_count}\n"
                 f"✅ Выплачено за всё время: {paid}р\n"
                 f"⏳ Ожидает выплаты: {pending}р")
-        await message.answer(text, parse_mode="HTML")
+        
+        await message.answer(text, parse_mode="HTML", disable_web_page_preview=True)
     except Exception as e:
         print(f"Ошибка формирования профиля: {e}")
         await message.answer("Не удалось загрузить данные профиля.")
